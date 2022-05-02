@@ -5,13 +5,11 @@ import kotlin.io.println as println
 
 object ChatService {
     var chatStorage: MutableMap<Int, Chat> = mutableMapOf()
-    private var idChat: Int = 0
-    private var idMessage: Int = 0
+    var idChat: Int = 0
+    var idMessage: Int = 0
     private var timeMessageCall: LocalDateTime = LocalDateTime.now()
 
-
-    //Создаем чат
-    private fun createChat(
+    fun createChat(
         titles: String,
         userTwo: User,
         userOne: User,
