@@ -10,48 +10,30 @@ class MainKtTest {
     private val userTree = User(3, "Сармат", mutableMapOf())
     private val service = ChatService
 
-    private fun nU() {
+    private fun nU(){
         service.chatStorage.clear()
         service.idChat = 0
         service.idMessage = 0
     }
 
     @Test
-    fun createChat() {
-        nU()
-        service.createChat("Чат между пользователями ${userTree.userName} и ${userOne.userName}", userTree, userOne)
-        assertFalse(service.chatStorage.isEmpty())
-    }
-
-    @Test
-    fun sendMessage_chatStorage_isEmpty() {
+    fun sendMessage() {
         nU()
         service.sendMessage(userOne, userTwo, "Проверка")
         assertFalse(service.chatStorage.isEmpty())
     }
 
-    @Test
-    fun sendMessage_chatStorage_not_isEmpty() {
+    @Test(expected = NoSuchElementException::class)
+    fun sendMessage_try() {
         nU()
-        service.sendMessage(userTwo, userTree, "Проверка1")
-        service.sendMessage(userTwo, userTree, "Проверка2")
-        assertTrue(service.chatStorage.size == 1)
-
-    }
-
-    @Test
-    fun sendMessage_chatStorage_not_isEmpty_New_Chat() {
-        nU()
-        service.sendMessage(userTwo, userTree, "Проверка2")
+        val newChat = Chat(chatId = 0, chatUsers = mutableListOf(),titles = "Чат между пользователями ${userTree.userName} и ${userOne.userName}", unreadMessages = 0)
+        service.chatStorage[newChat.chatId] = newChat
+        userTree.memoryOfMyChats[userOne.userId] = newChat.chatId
+        userOne.memoryOfMyChats[userTree.userId] = newChat.chatId
+        service.sendMessage(userOne, userTree, "Проверка2")
         service.sendMessage(userTree, userOne, "Проверка3")
-        assertTrue("Чат между пользователями ${userTree.userName} и ${userOne.userName}" == service.chatStorage[1]!!.titles)
-    }
+        assertTrue(userOne.memoryOfMyChats.getValue(userOne.memoryOfMyChats.keys.first { it == userTree.userId }) == userTree.memoryOfMyChats.getValue(userOne.memoryOfMyChats.keys.first { it == userOne.userId }))
 
-    @Test
-    fun createMessage() {
-        nU()
-        service.sendMessage(userOne, userTwo, "Проверка")
-        assertTrue(service.chatStorage[0]!!.chatUsers[0].text == "Проверка")
     }
 
     @Test
@@ -60,28 +42,16 @@ class MainKtTest {
         service.sendMessage(userOne, userTwo, "Проверка")
         val chatId = 0
         val messageId = 0
-        assertFalse(service.chatStorage[chatId]?.chatUsers?.first { messageId == it.messageId }?.readabilityId!!)
+        assertFalse(service.chatStorage.getValue(chatId).chatUsers.first{ messageId == it.messageId }.readabilityId)
     }
 
-    @Test
-    fun readingMessage_Earlier() {
+    @Test(expected = NoSuchElementException::class)
+    fun readingMessage_Null() {
         nU()
         service.sendMessage(userOne, userTwo, "Проверка")
         val chatId = 0
-        val messageId = 0
-        service.readingMessage(chatId, messageId)
-        assertTrue(service.chatStorage[chatId]?.chatUsers?.first { messageId == it.messageId }?.readabilityId!!)
-    }
-
-    @Test
-    fun readingMessage_Null() {
-        service.chatStorage.clear()
-        service.sendMessage(userOne, userTwo, "Проверка")
-        service.sendMessage(userOne, userTwo, "Проверка")
-        val chatId = 0
-        val messageId = 0
-        service.readingMessage(chatId, messageId)
-        assertNull(service.chatStorage[chatId]?.chatUsers?.first { messageId == it.messageId }?.readabilityId)
+        val messageId = 3
+        assertFalse(service.chatStorage.getValue(chatId).chatUsers.first{ messageId == it.messageId }.readabilityId)
     }
 
     @Test
@@ -89,13 +59,6 @@ class MainKtTest {
         nU()
         service.idMessage = 0
         service.sendMessage(userOne, userTwo, "Проверка")
-        service.deleteChat(userOne, userTwo)
-        assertTrue(service.chatStorage.isEmpty())
-    }
-
-    @Test
-    fun deleteChat_No_Users() {
-        nU()
         service.deleteChat(userOne, userTwo)
         assertTrue(service.chatStorage.isEmpty())
     }
@@ -119,17 +82,18 @@ class MainKtTest {
         assertTrue(service.chatStorage.size == 2)
     }
 
-    @Test(expected = ChatNotFoundException::class)
-    fun outputChats_Exception() {
-        nU()
-        service.outputChats(userOne)
-    }
-
     @Test
     fun getListOfMessages() {
         nU()
         service.sendMessage(userOne, userTwo, "Проверка")
-        assertFalse(service.getListOfMessages(userOne, 0).isEmpty())
+        assertFalse(service.getListOfMessages(userOne,0).isEmpty())
+    }
+
+    @Test(expected = Exception::class)
+    fun getListOfMessages_No() {
+        nU()
+        service.sendMessage(userOne, userTwo, "Проверка")
+        assertTrue(service.getListOfMessages(userTree,0).isEmpty())
     }
 
     @Test
@@ -139,14 +103,6 @@ class MainKtTest {
         service.sendMessage(userOne, userTwo, "Проверка4")
         service.editMessageInChat(userOne, "Хорошо", 0)
         assertTrue(service.chatStorage[0]!!.chatUsers.first { it.messageId == 1 }.text == "Хорошо")
-    }
-
-    @Test(expected = ChatNotFoundException::class)
-    fun editMessageInChat_No() {
-        nU()
-        service.sendMessage(userOne, userTwo, "Проверка")
-        service.sendMessage(userOne, userTwo, "Проверка4")
-        service.editMessageInChat(userOne, "Хорошо", 7)
     }
 
     @Test

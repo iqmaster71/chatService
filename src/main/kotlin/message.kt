@@ -4,6 +4,7 @@ import java.time.LocalDateTime
 
 class Message(
     val messageId: Int,
+    val chatId: Int,
     val messageRecipientId: Int,
     val messageSenderId: Int,
     val userNameSender: String,
