@@ -6,7 +6,7 @@ class Chat(
     val titles: String,
     var unreadMessages: Int
 ) {
-    override fun toString(): String {
+    override fun toString(): String  {
         return when {
             unreadMessages > 0 -> "$titles индекс чата: $chatId\n $chatUsers"
             else -> "Новых сообщений нет"

@@ -34,6 +34,12 @@ fun main() {
     service.editMessageInChat(userTwo, "Не, все плохо, Сармат", 0)
     println("Все чаты $userTwo " + service.outputChats(userTwo))
     println(service.getListOfMessages(userTwo, 0))
+    println("Комната 1")
+    println(service.chatStorage[0]!!.chatUsers)
+    println("Комната 2")
+    println(service.chatStorage[1]!!.chatUsers)
+    println("Комната 3")
+    println(service.chatStorage[2]!!.chatUsers)
 
     service.deleteChat(userTree, userOne)
     println("Количество чатов с непрочитанными сообщениями: " + service.getUnreadChatsCount())
